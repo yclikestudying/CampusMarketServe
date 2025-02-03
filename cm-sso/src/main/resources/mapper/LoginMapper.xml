@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.mapper.LoginMapper">
+
+    <resultMap id="BaseResultMap" type="com.project.domain.User">
+            <id property="userId" column="user_id" jdbcType="BIGINT"/>
+            <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+            <result property="userPhone" column="user_phone" jdbcType="VARCHAR"/>
+            <result property="userPassword" column="user_password" jdbcType="VARCHAR"/>
+            <result property="userGender" column="user_gender" jdbcType="INTEGER"/>
+            <result property="userBirthday" column="user_birthday" jdbcType="CHAR"/>
+            <result property="userProfile" column="user_profile" jdbcType="VARCHAR"/>
+            <result property="userLocation" column="user_location" jdbcType="VARCHAR"/>
+            <result property="userHometown" column="user_hometown" jdbcType="VARCHAR"/>
+            <result property="userProfession" column="user_profession" jdbcType="VARCHAR"/>
+            <result property="userTags" column="user_tags" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id,user_name,user_phone,
+        user_password,user_gender,user_birthday,
+        user_profile,user_location,user_hometown,
+        user_profession,create_time,update_time,
+        user_tags, is_delete
+    </sql>
+</mapper>
