@@ -58,9 +58,9 @@ public class UserInfoController {
      * @param file  照片文件
      * @return success or fail
      */
-    @PutMapping("/updateAvatar")
+    @PostMapping("/updateAvatar")
     @ApiOperation(value = "修改用户头像")
-    public Result<String> updateAvatar(@RequestHeader("Authorization") String token, @Param("file") MultipartFile file) {
+    public Result<String> updateAvatar(@RequestHeader("Authorization") String token, @RequestParam("file") MultipartFile file) {
         String newLink = userInfoService.updateAvatar(token, file);
         return Result.success(ResultCodeEnum.SUCCESS, newLink);
     }
@@ -90,5 +90,15 @@ public class UserInfoController {
     public Result<UserVO> getUserInfoByUserId(@PathVariable("userId") Long userId) {
         UserVO userInfoByUserId = userInfoService.getUserInfoByUserId(userId);
         return Result.success(ResultCodeEnum.SUCCESS, userInfoByUserId);
+    }
+
+    /**
+     * 查询动态、互关、关注和粉丝的数量
+     */
+    @GetMapping("/getOtherInfo")
+    @ApiOperation(value = "根据用户id查询用户信息")
+    public Result<Map<String, Integer>> getOtherInfo(@RequestHeader("Authorization") String token) {
+        Map<String, Integer> map = userInfoService.getOtherInfo(token);
+        return Result.success(ResultCodeEnum.SUCCESS, map);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/article")
@@ -29,7 +30,7 @@ public class ArticleController {
      * @param files 动态图片
      * @return success or fail
      */
-    @PostMapping("/publish")
+    @RequestMapping("/publish")
     @ApiOperation(value = "发布动态")
     public Result<String> publish(@RequestHeader("Authorization") String token, @RequestParam(value = "text", required = false) String text, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
         boolean result = articleService.publish(token, text, files);
@@ -50,7 +51,7 @@ public class ArticleController {
     }
 
     /**
-     * 查询自己发布的动态
+     * 查询我的动态
      *
      * @param token 用户id和手机号
      * @return 动态数组
@@ -60,6 +61,19 @@ public class ArticleController {
     public Result<List<Article>> queryAll(@RequestHeader("Authorization") String token) {
         List<Article> articles = articleService.queryAll(token);
         return Result.success(ResultCodeEnum.SUCCESS, articles);
+    }
+
+    /**
+     * 查询其他人发布的动态
+     *
+     * @param token 用户id和手机号
+     * @return 动态数组
+     */
+    @GetMapping("/queryOtherAll")
+    @ApiOperation(value = "查询所有动态")
+    public Result<Map<String, Object>> queryOtherAll(@RequestHeader("Authorization") String token) {
+        Map<String, Object> map = articleService.queryOtherAll(token);
+        return Result.success(ResultCodeEnum.SUCCESS, map);
     }
 
     /**

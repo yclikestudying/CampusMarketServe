@@ -5,9 +5,15 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.VO.UserInfoVO;
 import com.project.VO.UserVO;
+import com.project.domain.Article;
+import com.project.domain.Follows;
 import com.project.domain.User;
 import com.project.exception.BusinessExceptionHandler;
+import com.project.mapper.ArticleMapper;
+import com.project.mapper.FollowsMapper;
 import com.project.mapper.UserInfoMapper;
+import com.project.service.ArticleService;
+import com.project.service.FollowsService;
 import com.project.service.UserInfoService;
 import com.project.util.ThrowUtil;
 import com.project.util.TokenUtil;
@@ -19,16 +25,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, User>
         implements UserInfoService {
     @Resource
     private UserInfoMapper userInfoMapper;
+
+    @Resource
+    private FollowsService followsService;
+
+    @Resource
+    private ArticleService articleService;
 
     /**
      * 获取用户个人信息
@@ -236,5 +245,33 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, User>
         BeanUtils.copyProperties(user, userVO);
 
         return userVO;
+    }
+
+    /**
+     * 查询动态、互关、关注和粉丝的数量
+     *
+     * @param token
+     * @return
+     */
+    @Override
+    public Map<String, Integer> getOtherInfo(String token) {
+        Map<String, Integer> map = new HashMap<>();
+        // 1. 查询我的动态数量
+        List<Article> articles = articleService.queryAll(token);
+        map.put("动态", articles != null ? articles.size() : 0);
+
+        // 2. 查询我的关注数量
+        List<User> users = followsService.followerUser(token);
+        map.put("关注", users != null ? users.size() : 0);
+
+        // 3. 查询我的粉丝数量
+        List<User> users1 = followsService.followeeUser(token);
+        map.put("粉丝", users1 != null ? users1.size() : 0);
+
+        // 4. 查询互关数量
+        List<User> users2 = followsService.eachFollow(token);
+        map.put("互关", users2 != null ? users2.size() : 0);
+
+        return map;
     }
 }

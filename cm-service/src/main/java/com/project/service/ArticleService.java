@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public interface ArticleService extends IService<Article> {
     // 发布动态
@@ -18,6 +19,9 @@ public interface ArticleService extends IService<Article> {
     // 查询自己发表的动态
     List<Article> queryAll(String token);
 
+    // 查询其他人的动态
+    Map<String, Object> queryOtherAll(String token);
+
     // 模糊查询动态
     List<ArticleVO> queryArticle(String token, String content);
 
@@ -26,4 +30,5 @@ public interface ArticleService extends IService<Article> {
 
     // 根据文章id查询动态
     List<Object> queryArticleByArticleId(Long articleId);
+
 }

@@ -8,24 +8,24 @@ import com.project.VO.ArticleVO;
 import com.project.VO.UserInfoVO;
 import com.project.VO.UserVO;
 import com.project.domain.Article;
+import com.project.domain.Follows;
 import com.project.domain.User;
 import com.project.exception.BusinessExceptionHandler;
 import com.project.mapper.ArticleMapper;
+import com.project.mapper.FollowsMapper;
 import com.project.mapper.UserInfoMapper;
 import com.project.service.ArticleService;
 import com.project.util.ThrowUtil;
 import com.project.util.TokenUtil;
 import com.project.util.UploadAvatar;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
@@ -35,6 +35,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     @Resource
     private UserInfoMapper userInfoMapper;
+
+    @Resource
+    private FollowsMapper followsMapper;
 
     /**
      * 用户id
@@ -117,7 +120,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     /**
      * 查询自己发表的动态
      *
-     * @param token 用户id和手机号
+     * @param token   用户id和手机号
      * @return 动态数组
      */
     @Override
@@ -125,10 +128,52 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         // 1. 解析token
         getUserId(token);
 
-        // 查询自己发表的动态
+        // 2. 查询自己发表的动态
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId);
         return articleMapper.selectList(queryWrapper);
+    }
+
+    /**
+     * 查询其他人的动态
+     *
+     * @param token   用户id和手机号
+     * @return 动态数组
+     */
+    @Override
+    public Map<String, Object> queryOtherAll(String token) {
+        // 1. 解析token
+        getUserId(token);
+
+        // 2. 查询自己发表的动态
+        QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
+        queryWrapper.ne("user_id", userId);
+        List<Article> articles = articleMapper.selectList(queryWrapper);
+
+        // 3. 获取 user_id
+        Set<Long> userIds = new HashSet<>();
+        articles.forEach(article -> userIds.add(article.getUserId()));
+
+        // 4. 根据 user_id 查询用户信息
+        List<User> users = userInfoMapper.selectBatchIds(userIds);
+
+        // 5. 根据 user_id 查询用户是否被关注
+        Map<Long, String> followMap = new HashMap<>();
+        userIds.forEach(otherUserId -> {
+            QueryWrapper<Follows> followsQueryWrapper = new QueryWrapper<>();
+            followsQueryWrapper.eq("follower_id", userId)
+                            .eq("followee_id", otherUserId);
+            Follows one = followsMapper.selectOne(followsQueryWrapper);
+            followMap.put(otherUserId, one == null ? "关注" : "已关注");
+        });
+
+
+        // 5. 返回数据
+        Map<String, Object> map = new HashMap<>();
+        map.put("users", users);
+        map.put("articles", articles);
+        map.put("followMap", followMap);
+        return map;
     }
 
     /**
@@ -193,6 +238,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     /**
      * 根据文章id查询动态
+     *
      * @param articleId
      * @return
      */

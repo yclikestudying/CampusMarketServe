@@ -2,6 +2,8 @@ package com.project.VO;
 
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 public class UserInfoVO {
     /**
@@ -48,4 +50,9 @@ public class UserInfoVO {
      * 标签
      */
     private String userTags;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
 }
