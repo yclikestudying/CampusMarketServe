@@ -11,7 +11,7 @@ import java.util.Map;
 
 public interface ArticleService extends IService<Article> {
     // 发布动态
-    boolean publish(String token, String text, List<MultipartFile> files);
+    boolean publish(String token, String text, MultipartFile file, Integer count, String textContent);
 
     // 删除动态
     boolean delete(String token, Long articleId);

@@ -21,4 +21,7 @@ public interface FollowsService extends IService<Follows> {
 
     // 相互关注
     List<User> eachFollow(String token);
+
+    // 查询是否关注
+    boolean isFollow(String token, Long otherUserId);
 }

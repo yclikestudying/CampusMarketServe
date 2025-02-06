@@ -19,7 +19,7 @@ public class FollowsController {
     private FollowsService followsService;
 
     /**
-     * 关注其他用户
+     * 关注用户
      *
      * @param token
      * @param otherUserId 被关注者id
@@ -71,4 +71,15 @@ public class FollowsController {
         List<User> users = followsService.eachFollow(token);
         return Result.success(ResultCodeEnum.SUCCESS, users);
     }
+
+    /**
+     * 根据id查询是否关注
+     */
+    @GetMapping("/isFollow")
+    @ApiOperation(value = "查询是否关注")
+    public Result<String> isFollow(@RequestHeader("Authorization") String token, @RequestParam(value = "otherUserId") Long otherUserId) {
+        boolean result = followsService.isFollow(token, otherUserId);
+        return Result.success(ResultCodeEnum.SUCCESS, result ? "已关注" : "关注");
+    }
+
 }

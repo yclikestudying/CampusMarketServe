@@ -23,7 +23,7 @@ public interface UserInfoService extends IService<User> {
     List<UserVO> queryUser(String token, String username);
 
     // 根据用户id查询用户信息
-    UserVO getUserInfoByUserId(Long userId);
+    User getUserInfoByUserId(Long userId);
 
     // 查询动态、互关、关注和粉丝的数量
     Map<String, Integer> getOtherInfo(String token);

@@ -229,7 +229,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, User>
      * @return 用户信息
      */
     @Override
-    public UserVO getUserInfoByUserId(Long userId) {
+    public User getUserInfoByUserId(Long userId) {
         // 1. 校验用户id
         if (userId == null || userId <= 0) {
             ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "参数错误"));
@@ -238,13 +238,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, User>
         // 2. 构造查询条件
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId);
-        User user = userInfoMapper.selectOne(queryWrapper);
-
-        // 3. 数据脱敏
-        UserVO userVO = new UserVO();
-        BeanUtils.copyProperties(user, userVO);
-
-        return userVO;
+        return userInfoMapper.selectOne(queryWrapper);
     }
 
     /**

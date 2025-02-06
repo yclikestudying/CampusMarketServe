@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.project.VO.ArticleVO;
 import com.project.VO.UserInfoVO;
 import com.project.VO.UserVO;
@@ -38,54 +39,73 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     @Resource
     private FollowsMapper followsMapper;
+    private final List<MultipartFile> files = new ArrayList<>();
 
     /**
      * 用户id
      */
     private Long userId;
-
     private final Gson gson = new Gson();
+    private final List<String> links = new ArrayList<>();
+    private final Article article = new Article();
 
     /**
-     * 发布动态
-     *
-     * @param token 用户id和手机号
-     * @param text  动态文字
-     * @param files 动态图片
-     * @return success or fail
+     * 发表动态
+     * @param token
+     * @param text
+     * @param file
+     * @return
      */
     @Override
-    public boolean publish(String token, String text, List<MultipartFile> files) {
+    public boolean publish(String token, String text, MultipartFile file, Integer count, String textContent) {
         // 1. 解析token
         getUserId(token);
 
-        // 2. 文字和图片不能同时为空
-        if (text == null && files == null) {
-            ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "参数不能同时为空"));
+        // 2. 校验数据
+        if (text == null && file == null) {
+            ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "文本和图片同时为空"));
         }
 
-        Article article = new Article();
         article.setUserId(userId);
-        if (text != null && !text.isEmpty()) {
+        // 3. 只上传文本
+        if (text != null && file == null) {
             article.setArticleContent(text);
+            int result = articleMapper.insert(article);
+            article.setArticleContent(null);
+            return result > 0;
         }
 
-        // 3. 图片上传到阿里云，然后获取新的访问地址
-        List<String> links = new ArrayList<>();
-        if (files != null && !files.isEmpty()) {
-            files.forEach(file -> {
-                try {
-                    String newLink = UploadAvatar.uploadAvatar(file, "article");
-                    links.add(newLink);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            String photos = gson.toJson(links);
-            article.setArticlePhotos(photos);
+        // 4. 只上传图片
+        if (text == null && textContent == null) {
+            return upload(file, count);
         }
 
-        return articleMapper.insert(article) == 1;
+        // 5. 上传文本和图片
+        if (textContent != null) {
+            article.setArticleContent(textContent);
+            return upload(file, count);
+        }
+        return false;
+    }
+
+    private boolean upload(MultipartFile file, Integer count) {
+        String link = null;
+        try {
+            link = UploadAvatar.uploadAvatar(file, "avatar");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        links.add(link);
+        if (links.size() == count) {
+            article.setArticlePhotos(gson.toJson(links));
+            int result = articleMapper.insert(article);
+            links.clear();
+            article.setArticleContent(null);
+            article.setArticlePhotos(null);
+            return result > 0;
+        }
+
+        return false;
     }
 
     /**
@@ -120,7 +140,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     /**
      * 查询自己发表的动态
      *
-     * @param token   用户id和手机号
+     * @param token 用户id和手机号
      * @return 动态数组
      */
     @Override
@@ -137,7 +157,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     /**
      * 查询其他人的动态
      *
-     * @param token   用户id和手机号
+     * @param token 用户id和手机号
      * @return 动态数组
      */
     @Override
@@ -162,7 +182,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         userIds.forEach(otherUserId -> {
             QueryWrapper<Follows> followsQueryWrapper = new QueryWrapper<>();
             followsQueryWrapper.eq("follower_id", userId)
-                            .eq("followee_id", otherUserId);
+                    .eq("followee_id", otherUserId);
             Follows one = followsMapper.selectOne(followsQueryWrapper);
             followMap.put(otherUserId, one == null ? "关注" : "已关注");
         });
@@ -277,5 +297,19 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     private void getUserId(String token) {
         Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
         userId = (Long) stringObjectMap.get("userId");
+    }
+
+    /**
+     * 上传图片
+     *
+     * @param file 图片
+     */
+    private void uploadFile(MultipartFile file) {
+        try {
+            String newLink = UploadAvatar.uploadAvatar(file, "article");
+            links.add(newLink);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

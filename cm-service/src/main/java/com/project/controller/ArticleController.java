@@ -1,5 +1,6 @@
 package com.project.controller;
 
+import com.project.DTO.UploadFile;
 import com.project.VO.ArticleVO;
 import com.project.common.Result;
 import com.project.common.ResultCodeEnum;
@@ -11,9 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/article")
@@ -26,14 +25,12 @@ public class ArticleController {
      * 发布动态
      *
      * @param token 用户id和手机号
-     * @param text  动态文字
-     * @param files 动态图片
      * @return success or fail
      */
     @RequestMapping("/publish")
     @ApiOperation(value = "发布动态")
-    public Result<String> publish(@RequestHeader("Authorization") String token, @RequestParam(value = "text", required = false) String text, @RequestParam(value = "files", required = false) List<MultipartFile> files) {
-        boolean result = articleService.publish(token, text, files);
+    public Result<String> publish(@RequestHeader("Authorization") String token, @RequestBody(required = false) String text, @RequestParam(value = "file", required = false) MultipartFile file, @RequestParam(value = "count", required = false) Integer count, @RequestParam(value = "text", required = false) String textContent) {
+        boolean result = articleService.publish(token, text, file, count, textContent);
         return result ? Result.success(ResultCodeEnum.SUCCESS) : Result.fail(ResultCodeEnum.FAIL);
     }
 

@@ -87,9 +87,9 @@ public class UserInfoController {
      */
     @GetMapping("/getUserInfoByUserId/{userId}")
     @ApiOperation(value = "根据用户id查询用户信息")
-    public Result<UserVO> getUserInfoByUserId(@PathVariable("userId") Long userId) {
-        UserVO userInfoByUserId = userInfoService.getUserInfoByUserId(userId);
-        return Result.success(ResultCodeEnum.SUCCESS, userInfoByUserId);
+    public Result<User> getUserInfoByUserId(@PathVariable("userId") Long userId) {
+        User user = userInfoService.getUserInfoByUserId(userId);
+        return Result.success(ResultCodeEnum.SUCCESS, user);
     }
 
     /**

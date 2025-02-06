@@ -175,4 +175,23 @@ public class FollowsServiceImpl extends ServiceImpl<FollowsMapper, Follows>
         }
         return null;
     }
+
+    /**
+     * 查询是否关注
+     *
+     * @param token
+     * @return
+     */
+    @Override
+    public boolean isFollow(String token, Long otherUserId) {
+        // 1. 解析token
+        Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
+        Long userId = (Long) stringObjectMap.get("userId");
+
+        // 2. 构造条件
+        QueryWrapper<Follows> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("follower_id", userId)
+                .eq("followee_id", otherUserId);
+        return followsMapper.selectOne(queryWrapper) != null;
+    }
 }
