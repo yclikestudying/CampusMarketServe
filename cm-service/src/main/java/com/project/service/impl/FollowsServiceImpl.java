@@ -145,7 +145,7 @@ public class FollowsServiceImpl extends ServiceImpl<FollowsMapper, Follows>
         List<Long> idList = new ArrayList<>();
         if (!follows.isEmpty()) {
             follows.forEach(follow -> {
-                idList.add(follow.getFolloweeId());
+                idList.add(follow.getFollowerId());
             });
 
             // 4. 查询我关注的用户的信息
