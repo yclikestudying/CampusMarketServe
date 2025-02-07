@@ -8,6 +8,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/like")
@@ -17,14 +19,12 @@ public class LikeController {
     private LikeService likeService;
 
     /**
-     * 点赞或取消点按
-     * @param token 用户id和手机号
-     * @param articleId 动态id
-     * @return success or fail
+     * 点赞或取消点赞
      */
-    @GetMapping("/isLike")
-    @ApiOperation(value = "是否点赞")
-    public Result<String> isLike(@RequestHeader("Authorization") String token, @RequestParam("articleId") Long articleId) {
-        return Result.success(ResultCodeEnum.SUCCESS, likeService.isLike(token, articleId));
+    @GetMapping("/likeOrCancelLike")
+    @ApiOperation(value = "点赞或取消点赞")
+    public Result<Boolean> likeOrCancelLike(@RequestHeader("Authorization") String token, @RequestParam(value = "articleId") Long articleId) {
+        boolean result = likeService.likeOrCancelLike(token, articleId);
+        return Result.success(ResultCodeEnum.SUCCESS, result);
     }
 }

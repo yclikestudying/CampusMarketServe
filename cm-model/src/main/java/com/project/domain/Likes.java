@@ -19,7 +19,7 @@ public class Likes implements Serializable {
      * 点赞id
      */
     @TableId(type = IdType.AUTO)
-    private Long likeId;
+    private Long id;
 
     /**
      * 点赞用户id

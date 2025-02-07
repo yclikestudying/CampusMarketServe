@@ -16,6 +16,7 @@ import com.project.mapper.ArticleMapper;
 import com.project.mapper.FollowsMapper;
 import com.project.mapper.UserInfoMapper;
 import com.project.service.ArticleService;
+import com.project.service.LikeService;
 import com.project.util.ThrowUtil;
 import com.project.util.TokenUtil;
 import com.project.util.UploadAvatar;
@@ -27,18 +28,19 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         implements ArticleService {
     @Resource
     private ArticleMapper articleMapper;
-
     @Resource
     private UserInfoMapper userInfoMapper;
-
     @Resource
     private FollowsMapper followsMapper;
+    @Resource
+    private LikeService likeService;
     private final List<MultipartFile> files = new ArrayList<>();
 
     /**
@@ -51,6 +53,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     /**
      * 发表动态
+     *
      * @param token
      * @param text
      * @param file
@@ -76,12 +79,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         }
 
         // 4. 只上传图片
-        if (text == null && textContent == null) {
+        if (text == null && Objects.equals(textContent, "")) {
             return upload(file, count);
         }
 
         // 5. 上传文本和图片
-        if (textContent != null) {
+        if (!Objects.equals(textContent, "")) {
             article.setArticleContent(textContent);
             return upload(file, count);
         }
@@ -165,14 +168,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         // 1. 解析token
         getUserId(token);
 
-        // 2. 查询自己发表的动态
+        // 2. 查询他人发表的动态
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
         queryWrapper.ne("user_id", userId);
         List<Article> articles = articleMapper.selectList(queryWrapper);
 
         // 3. 获取 user_id
         Set<Long> userIds = new HashSet<>();
-        articles.forEach(article -> userIds.add(article.getUserId()));
+        if (!articles.isEmpty()) {
+            userIds = articles.stream().map(Article::getUserId).collect(Collectors.toSet());
+        }
 
         // 4. 根据 user_id 查询用户信息
         List<User> users = userInfoMapper.selectBatchIds(userIds);
@@ -188,11 +193,24 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         });
 
 
-        // 5. 返回数据
+        List<Long> articleIds = new ArrayList<>();
+        Map<Long, Boolean> likeMap = new HashMap<>();
+        Map<Long, Integer> likeNumber = new HashMap<>();
+        if (!articles.isEmpty()) {
+            articleIds = articles.stream().map(Article::getArticleId).collect(Collectors.toList());
+            // 6. 查询文章是否点赞
+            likeMap = likeService.isLike(token, articleIds);
+            // 7. 查询每篇文章的点赞数量
+            likeNumber = likeService.getLikeNumber(token, articleIds);
+        }
+
+        // 8. 返回数据
         Map<String, Object> map = new HashMap<>();
         map.put("users", users);
         map.put("articles", articles);
         map.put("followMap", followMap);
+        map.put("likeMap", likeMap);
+        map.put("likeNumber", likeNumber);
         return map;
     }
 

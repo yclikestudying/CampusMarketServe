@@ -13,6 +13,8 @@ import com.project.util.TokenUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -21,49 +23,98 @@ public class LikeServiceImpl extends ServiceImpl<LikeMapper, Likes>
     @Resource
     private LikeMapper likeMapper;
 
-    private Long userId;
-
     /**
-     * 点赞或取消点按
+     * 查看文章是否点赞
      *
-     * @param token     用户id和手机号
-     * @param articleId 动态id
-     * @return success or fail
+     * @param token
+     * @param articleIds
+     * @return
      */
     @Override
-    public String isLike(String token, Long articleId) {
+    public Map<Long, Boolean> isLike(String token, List<Long> articleIds) {
         // 1. 解析token
-        getUserId(token);
+        Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
+        Long userId = (Long) stringObjectMap.get("userId");
 
-        // 2. 校验articleId是否符合要求
+        // 2. 校验参数
+        if (articleIds.isEmpty()) {
+            ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "参数错误"));
+        }
+
+        // 3. 查看是否已经点赞
+        Map<Long, Boolean> likeMap = new HashMap<>();
+        articleIds.forEach(articleId -> {
+            QueryWrapper<Likes> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("user_id", userId)
+                    .eq("article_id", articleId);
+            Likes likes = likeMapper.selectOne(queryWrapper);
+            likeMap.put(articleId, likes != null);
+        });
+
+        return likeMap;
+    }
+
+    /**
+     * 点赞或取消点赞
+     *
+     * @param token
+     * @param articleId
+     * @return
+     */
+    @Override
+    public boolean likeOrCancelLike(String token, Long articleId) {
+        // 1. 解析token
+        Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
+        Long userId = (Long) stringObjectMap.get("userId");
+
+        // 2. 校验参数
         if (articleId == null || articleId <= 0) {
             ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "参数错误"));
         }
 
-        // 3. 查询是否已经点过赞
+        // 3. 查询是否点赞
         QueryWrapper<Likes> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId)
                 .eq("article_id", articleId);
-        Likes like = likeMapper.selectOne(queryWrapper);
-        if (like == null) {
-            // 没有点过赞，则进行点赞
+        Likes one = likeMapper.selectOne(queryWrapper);
+        if (one == null) {
+            // 没有点赞
             Likes likes = new Likes();
             likes.setUserId(userId);
             likes.setArticleId(articleId);
-
-            return likeMapper.insert(likes) == 1 ? "点赞成功" : "点赞失败";
+            return likeMapper.insert(likes) > 0;
         }
-        // 点过赞，则取消点赞
-        return likeMapper.delete(queryWrapper) == 1 ? "取消点赞成功" : "取消点赞失败";
+
+        // 取消点赞
+        return likeMapper.delete(queryWrapper) > 0;
     }
 
     /**
-     * 解析token
+     * 查看文章的点赞数
      *
-     * @param token 用户id和手机号
+     * @param token
+     * @param articleIds
+     * @return
      */
-    private void getUserId(String token) {
+    @Override
+    public Map<Long, Integer> getLikeNumber(String token, List<Long> articleIds) {
+        // 1. 解析token
         Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
-        userId = (Long) stringObjectMap.get("userId");
+        Long userId = (Long) stringObjectMap.get("userId");
+
+        // 2. 校验参数
+        if (articleIds.isEmpty()) {
+            ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "参数错误"));
+        }
+
+        // 3. 查看是否已经点赞
+        Map<Long, Integer> likeNumberMap = new HashMap<>();
+        articleIds.forEach(articleId -> {
+            QueryWrapper<Likes> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("article_id", articleId);
+            Integer count = likeMapper.selectCount(queryWrapper);
+            likeNumberMap.put(articleId, count);
+        });
+        return likeNumberMap;
     }
 }
