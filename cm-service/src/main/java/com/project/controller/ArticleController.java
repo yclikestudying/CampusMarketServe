@@ -55,9 +55,9 @@ public class ArticleController {
      */
     @GetMapping("/queryAll")
     @ApiOperation(value = "查询所有动态")
-    public Result<List<Article>> queryAll(@RequestHeader("Authorization") String token) {
-        List<Article> articles = articleService.queryAll(token);
-        return Result.success(ResultCodeEnum.SUCCESS, articles);
+    public Result<Map<String, Object>> queryAll(@RequestHeader("Authorization") String token) {
+        Map<String, Object> map = articleService.queryAll(token);
+        return Result.success(ResultCodeEnum.SUCCESS, map);
     }
 
     /**
@@ -95,9 +95,9 @@ public class ArticleController {
      */
     @GetMapping("/queryArticleByUserId/{userId}")
     @ApiOperation(value = "根据用户id查询动态")
-    public Result<List<Article>> queryArticleByUserId(@PathVariable("userId") Long userId) {
-        List<Article> list = articleService.queryArticleByUserId(userId);
-        return Result.success(ResultCodeEnum.SUCCESS, list);
+    public Result<Map<String, Object>> queryArticleByUserId(@RequestHeader("Authorization") String token, @PathVariable("userId") Long userId) {
+        Map<String, Object> map = articleService.queryArticleByUserId(token, userId);
+        return Result.success(ResultCodeEnum.SUCCESS, map);
     }
 
     /**

@@ -5,14 +5,14 @@ import lombok.Data;
 @Data
 public class CommentDTO {
     /**
-     * 评论的动态
+     * 评论的动态id
      */
     private Long articleId;
 
     /**
      * 评论的父id
      */
-    private Long commentParentId;
+    private Long parentId;
 
     /**
      * 评论内容

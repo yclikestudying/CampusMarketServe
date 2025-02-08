@@ -9,10 +9,12 @@ import com.project.VO.ArticleVO;
 import com.project.VO.UserInfoVO;
 import com.project.VO.UserVO;
 import com.project.domain.Article;
+import com.project.domain.Comment;
 import com.project.domain.Follows;
 import com.project.domain.User;
 import com.project.exception.BusinessExceptionHandler;
 import com.project.mapper.ArticleMapper;
+import com.project.mapper.CommentMapper;
 import com.project.mapper.FollowsMapper;
 import com.project.mapper.UserInfoMapper;
 import com.project.service.ArticleService;
@@ -41,7 +43,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     private FollowsMapper followsMapper;
     @Resource
     private LikeService likeService;
-    private final List<MultipartFile> files = new ArrayList<>();
+    @Resource
+    private CommentMapper commentMapper;
 
     /**
      * 用户id
@@ -133,11 +136,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
                 .eq("article_id", articleId);
         Article article = articleMapper.selectOne(queryWrapper);
         if (article == null) {
-            ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "没权限"));
+            ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "删除的文章不存在"));
         }
 
         // 4. 删除动态
-        return articleMapper.deleteById(articleId) == 1;
+        int result = articleMapper.deleteById(articleId);
+
+        // 5. 删除动态相关的评论
+        QueryWrapper<Comment> queryWrapper1 = new QueryWrapper<>();
+        queryWrapper1.eq("article_id", articleId);
+        int delete = commentMapper.delete(queryWrapper1);
+        return result > 0 && delete > 0;
     }
 
     /**
@@ -147,14 +156,42 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
      * @return 动态数组
      */
     @Override
-    public List<Article> queryAll(String token) {
+    public Map<String, Object> queryAll(String token) {
         // 1. 解析token
         getUserId(token);
 
         // 2. 查询自己发表的动态
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId);
-        return articleMapper.selectList(queryWrapper);
+        List<Article> articles = articleMapper.selectList(queryWrapper);
+
+        List<Long> articleIds = new ArrayList<>();
+        Map<Long, Boolean> likeMap = new HashMap<>();
+        Map<Long, Integer> likeNumber = new HashMap<>();
+        if (!articles.isEmpty()) {
+            articleIds = articles.stream().map(Article::getArticleId).collect(Collectors.toList());
+            // 6. 查询文章是否点赞
+            likeMap = likeService.isLike(token, articleIds);
+            // 7. 查询每篇文章的点赞数量
+            likeNumber = likeService.getLikeNumber(token, articleIds);
+        }
+
+        // 8. 查询每篇文章的评论数量
+        Map<Long, Integer> commentMap = new HashMap<>();
+        articleIds.forEach(articleId -> {
+            QueryWrapper<Comment> queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.eq("article_id", articleId);
+            Integer count = commentMapper.selectCount(queryWrapper1);
+            commentMap.put(articleId, count);
+        });
+
+        // 8. 返回数据
+        Map<String, Object> map = new HashMap<>();
+        map.put("articles", articles);
+        map.put("likeMap", likeMap);
+        map.put("likeNumber", likeNumber);
+        map.put("comment", commentMap);
+        return map;
     }
 
     /**
@@ -192,7 +229,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
             followMap.put(otherUserId, one == null ? "关注" : "已关注");
         });
 
-
         List<Long> articleIds = new ArrayList<>();
         Map<Long, Boolean> likeMap = new HashMap<>();
         Map<Long, Integer> likeNumber = new HashMap<>();
@@ -204,6 +240,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
             likeNumber = likeService.getLikeNumber(token, articleIds);
         }
 
+        // 8. 查询每篇文章的评论数量
+        Map<Long, Integer> commentMap = new HashMap<>();
+        articleIds.forEach(articleId -> {
+            QueryWrapper<Comment> queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.eq("article_id", articleId);
+            Integer count = commentMapper.selectCount(queryWrapper1);
+            commentMap.put(articleId, count);
+        });
+
         // 8. 返回数据
         Map<String, Object> map = new HashMap<>();
         map.put("users", users);
@@ -211,6 +256,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         map.put("followMap", followMap);
         map.put("likeMap", likeMap);
         map.put("likeNumber", likeNumber);
+        map.put("comment", commentMap);
         return map;
     }
 
@@ -262,7 +308,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
      * @return 动态集合
      */
     @Override
-    public List<Article> queryArticleByUserId(Long userId) {
+    public Map<String, Object> queryArticleByUserId(String token, Long userId) {
         // 1. 校验用户id
         if (userId == null || userId <= 0) {
             ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "参数错误"));
@@ -271,7 +317,36 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         // 2. 构造查询条件
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId);
-        return articleMapper.selectList(queryWrapper);
+        List<Article> articles = articleMapper.selectList(queryWrapper);
+
+        List<Long> articleIds = new ArrayList<>();
+        Map<Long, Boolean> likeMap = new HashMap<>();
+        Map<Long, Integer> likeNumber = new HashMap<>();
+        if (!articles.isEmpty()) {
+            articleIds = articles.stream().map(Article::getArticleId).collect(Collectors.toList());
+            // 6. 查询文章是否点赞
+            likeMap = likeService.isLike(token, articleIds);
+            // 7. 查询每篇文章的点赞数量
+            likeNumber = likeService.getLikeNumber(token, articleIds);
+        }
+
+        // 8. 查询每篇文章的评论数量
+        Map<Long, Integer> commentMap = new HashMap<>();
+        articleIds.forEach(articleId -> {
+            QueryWrapper<Comment> queryWrapper1 = new QueryWrapper<>();
+            queryWrapper1.eq("article_id", articleId);
+            Integer count = commentMapper.selectCount(queryWrapper1);
+            commentMap.put(articleId, count);
+        });
+
+        // 8. 返回数据
+        Map<String, Object> map = new HashMap<>();
+        map.put("articles", articles);
+        map.put("likeMap", likeMap);
+        map.put("likeNumber", likeNumber);
+        map.put("comment", commentMap);
+
+        return map;
     }
 
     /**
@@ -315,19 +390,5 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     private void getUserId(String token) {
         Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
         userId = (Long) stringObjectMap.get("userId");
-    }
-
-    /**
-     * 上传图片
-     *
-     * @param file 图片
-     */
-    private void uploadFile(MultipartFile file) {
-        try {
-            String newLink = UploadAvatar.uploadAvatar(file, "article");
-            links.add(newLink);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

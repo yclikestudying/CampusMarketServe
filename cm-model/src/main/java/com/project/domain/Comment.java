@@ -19,7 +19,7 @@ public class Comment implements Serializable {
      * 评论id
      */
     @TableId(type = IdType.AUTO)
-    private Long commentId;
+    private Long id;
 
     /**
      * do
@@ -34,7 +34,7 @@ public class Comment implements Serializable {
     /**
      * 评论的评论
      */
-    private Long commentParentId;
+    private Long parentId;
 
     /**
      * 评论内容

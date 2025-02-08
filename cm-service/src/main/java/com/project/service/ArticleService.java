@@ -17,7 +17,7 @@ public interface ArticleService extends IService<Article> {
     boolean delete(String token, Long articleId);
 
     // 查询自己发表的动态
-    List<Article> queryAll(String token);
+    Map<String, Object> queryAll(String token);
 
     // 查询其他人的动态
     Map<String, Object> queryOtherAll(String token);
@@ -26,7 +26,7 @@ public interface ArticleService extends IService<Article> {
     List<ArticleVO> queryArticle(String token, String content);
 
     // 根据用户id查询动态
-    List<Article> queryArticleByUserId(Long userId);
+    Map<String, Object> queryArticleByUserId(String token, Long userId);
 
     // 根据文章id查询动态
     List<Object> queryArticleByArticleId(Long articleId);

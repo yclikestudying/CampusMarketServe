@@ -3,6 +3,7 @@ package com.project.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.project.VO.ArticleVO;
 import com.project.VO.UserInfoVO;
 import com.project.VO.UserVO;
 import com.project.domain.Article;
@@ -251,7 +252,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, User>
     public Map<String, Integer> getOtherInfo(String token) {
         Map<String, Integer> map = new HashMap<>();
         // 1. 查询我的动态数量
-        List<Article> articles = articleService.queryAll(token);
+        Map<String, Object> objectMap = articleService.queryAll(token);
+        List<Article> articles = (List<Article>)objectMap.get("articles");
         map.put("动态", articles != null ? articles.size() : 0);
 
         // 2. 查询我的关注数量

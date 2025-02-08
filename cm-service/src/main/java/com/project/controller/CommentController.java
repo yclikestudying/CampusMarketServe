@@ -9,6 +9,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/comment")
@@ -16,6 +18,17 @@ import javax.annotation.Resource;
 public class CommentController {
     @Resource
     private CommentService commentService;
+
+    /**
+     * 根据文章id查询文章所有评论
+     */
+    @GetMapping("/queryCommentByArticleId/{articleId}")
+    @ApiOperation(value = "根据文章id查询文章所有评论")
+    public Result<List<Map<String, Object>>> queryCommentByArticleId(@RequestHeader("Authorization") String token, @PathVariable(value = "articleId") Long articleId) {
+        List<Map<String, Object>> list = commentService.queryCommentByArticleId(token, articleId);
+        return Result.success(ResultCodeEnum.SUCCESS, list);
+    }
+
 
     /**
      * 发表评论
