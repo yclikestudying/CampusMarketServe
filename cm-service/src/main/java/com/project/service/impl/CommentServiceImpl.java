@@ -68,13 +68,13 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         getUserId(token);
 
         // 2. 校验数据
-        if (commentId == null || commentId <= 0) {
+        if (commentId <= 0) {
             ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "参数错误"));
         }
 
         // 3. 查询评论是否存在
         QueryWrapper<Comment> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("comment_id", commentId)
+        queryWrapper.eq("id", commentId)
                 .eq("user_id", userId);
         Comment comment = commentMapper.selectOne(queryWrapper);
         if (comment == null) {

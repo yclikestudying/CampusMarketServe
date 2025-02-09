@@ -17,6 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -31,7 +33,7 @@ public class LoginServiceImpl extends ServiceImpl<LoginMapper, User>
      * @return token
      */
     @Override
-    public String phoneLogin(PhoneLoginDTO phoneLoginDTO) {
+    public Map<String, Object> phoneLogin(PhoneLoginDTO phoneLoginDTO) {
         // 1.验证手机号和密码是否为空
         String phone = phoneLoginDTO.getPhone();
         String password = phoneLoginDTO.getPassword();
@@ -59,7 +61,14 @@ public class LoginServiceImpl extends ServiceImpl<LoginMapper, User>
         }
 
         // 6.密码正确，生成token
-        return TokenUtil.createToken(user.getUserId(), user.getUserPhone());
+        Map<String, Object> map = new HashMap<>();
+        String token = TokenUtil.createToken(user.getUserId(), user.getUserPhone());
+        map.put("token", token);
+        map.put("userId", user.getUserId());
+        map.put("userAvatar", user.getUserAvatar());
+        map.put("userName", user.getUserName());
+
+        return map;
     }
 
     /**

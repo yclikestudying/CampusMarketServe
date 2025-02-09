@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
@@ -27,9 +28,9 @@ public class LoginController {
      */
     @PostMapping("/phoneLogin")
     @ApiOperation(value = "用户登录")
-    public Result<String> login(@RequestBody PhoneLoginDTO phoneLoginDTO) {
-        String token = loginService.phoneLogin(phoneLoginDTO);
-        return Result.success(ResultCodeEnum.SUCCESS, token);
+    public Result<Map<String, Object>> login(@RequestBody PhoneLoginDTO phoneLoginDTO) {
+        Map<String, Object> map = loginService.phoneLogin(phoneLoginDTO);
+        return Result.success(ResultCodeEnum.SUCCESS, map);
     }
 
     /**

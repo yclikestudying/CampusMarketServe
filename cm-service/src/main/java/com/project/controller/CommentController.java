@@ -55,5 +55,4 @@ public class CommentController {
     public Result<String> delete(@RequestHeader("Authorization") String token, @RequestParam("commentId") Long commentId) {
         return commentService.delete(token, commentId) ? Result.success(ResultCodeEnum.SUCCESS) : Result.fail(ResultCodeEnum.FAIL);
     }
-
 }
