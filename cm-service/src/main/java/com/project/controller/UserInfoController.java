@@ -97,8 +97,8 @@ public class UserInfoController {
      */
     @GetMapping("/getOtherInfo")
     @ApiOperation(value = "根据用户id查询用户信息")
-    public Result<Map<String, Integer>> getOtherInfo(@RequestHeader("Authorization") String token) {
-        Map<String, Integer> map = userInfoService.getOtherInfo(token);
+    public Result<Map<String, Integer>> getOtherInfo(@RequestHeader("Authorization") String token, @RequestParam(value = "otherUserId", required = false) Long otherUserId) {
+        Map<String, Integer> map = userInfoService.getOtherInfo(token, otherUserId);
         return Result.success(ResultCodeEnum.SUCCESS, map);
     }
 }

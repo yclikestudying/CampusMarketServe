@@ -42,6 +42,11 @@ public class Message implements Serializable {
     private Date createTime;
 
     /**
+     * 0-未读，1-已读
+     */
+    private Integer isRead;
+
+    /**
      * 0-未删除，1-已删除
      */
     private Integer isDelete;

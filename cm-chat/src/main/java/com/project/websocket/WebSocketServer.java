@@ -53,7 +53,10 @@ public class WebSocketServer {
     public void onMessage(String chatContent) throws IOException {
         MessageDTO messageDTO = gson.fromJson(chatContent, MessageDTO.class);
         boolean result = messageService.saveMessage(messageDTO.getMessage(), messageDTO.getUserId(), messageDTO.getOtherUserId());
-        webSocketMap.get(userId).getBasicRemote().sendText(result ? "成功" : "失败");
+        if (result) {
+            webSocketMap.get(userId).getBasicRemote().sendText(gson.toJson(messageDTO));
+            sendMessage(messageDTO.getOtherUserId(), messageDTO);
+        }
     }
 
     // 客户端关闭连接
@@ -62,24 +65,13 @@ public class WebSocketServer {
         System.out.println("用户" + userId + "关闭连接");
         webSocketMap.remove(userId);
     }
-//
-//    // 服务器更新一对一聊天记录
-//    public void sendMessage(Long fromId, Long toId) throws IOException {
-//        messageService = applicationContext.getBean(MessageService.class);
-//        List<Message> messageList = messageService.getMessage(fromId, toId);
-//        log.info("用户{}给用户{}发送消息", fromId, toId);
-//        System.out.println(webSocketMap);
-//        if (webSocketMap.containsKey(fromId)) {
-//            webSocketMap.get(fromId).getBasicRemote().sendText(gson.toJson(messageList));
-//        } else {
-//            log.info("用户{}不在线", fromId);
-//        }
-//        if (webSocketMap.containsKey(toId)) {
-//            webSocketMap.get(toId).getBasicRemote().sendText(gson.toJson(messageList));
-//        } else {
-//            log.info("用户{}不在线", toId);
-//        }
-//    }
+
+    // 服务器更新一对一聊天记录
+    public void sendMessage(Long otherUserId, MessageDTO messageDTO) throws IOException {
+        if (webSocketMap.get(otherUserId) != null) {
+            webSocketMap.get(otherUserId).getBasicRemote().sendText(gson.toJson(messageDTO));
+        }
+    }
 //
 //    // 获取当前人数
 //    public static synchronized int getOnlineCount() {

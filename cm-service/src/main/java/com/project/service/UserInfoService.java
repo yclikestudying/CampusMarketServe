@@ -26,5 +26,5 @@ public interface UserInfoService extends IService<User> {
     User getUserInfoByUserId(Long userId);
 
     // 查询动态、互关、关注和粉丝的数量
-    Map<String, Integer> getOtherInfo(String token);
+    Map<String, Integer> getOtherInfo(String token, Long otherUserId);
 }

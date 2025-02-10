@@ -14,13 +14,13 @@ public interface FollowsService extends IService<Follows> {
     boolean cancelFollow(String token, Long otherUserId);
 
     // 查询我的关注
-    List<User> followerUser(String token);
+    List<User> followerUser(String token, Long otherUserId);
 
     // 查询我的粉丝
-    List<User> followeeUser(String token);
+    List<User> followeeUser(String token, Long otherUserId);
 
     // 相互关注
-    List<User> eachFollow(String token);
+    List<User> eachFollow(String token, Long otherUserId);
 
     // 查询是否关注
     boolean isFollow(String token, Long otherUserId);

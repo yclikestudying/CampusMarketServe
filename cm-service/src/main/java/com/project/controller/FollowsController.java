@@ -47,8 +47,8 @@ public class FollowsController {
      */
     @GetMapping("/followerUser")
     @ApiOperation(value = "查询我的关注")
-    public Result<List<User>> followerUser(@RequestHeader("Authorization") String token) {
-        List<User> users = followsService.followerUser(token);
+    public Result<List<User>> followerUser(@RequestHeader("Authorization") String token, @RequestParam(value = "otherUserId", required = false) Long otherUserId) {
+        List<User> users = followsService.followerUser(token, otherUserId);
         return Result.success(ResultCodeEnum.SUCCESS, users);
     }
 
@@ -57,8 +57,8 @@ public class FollowsController {
      */
     @GetMapping("/followeeUser")
     @ApiOperation(value = "查询我的粉丝")
-    public Result<List<User>> followeeUser(@RequestHeader("Authorization") String token) {
-        List<User> users = followsService.followeeUser(token);
+    public Result<List<User>> followeeUser(@RequestHeader("Authorization") String token, @RequestParam(value = "otherUserId", required = false) Long otherUserId) {
+        List<User> users = followsService.followeeUser(token, otherUserId);
         return Result.success(ResultCodeEnum.SUCCESS, users);
     }
 
@@ -67,8 +67,8 @@ public class FollowsController {
      */
     @GetMapping("/eachFollow")
     @ApiOperation(value = "查询我的粉丝")
-    public Result<List<User>> eachFollow(@RequestHeader("Authorization") String token) {
-        List<User> users = followsService.eachFollow(token);
+    public Result<List<User>> eachFollow(@RequestHeader("Authorization") String token, @RequestParam(value = "otherUserId", required = false) Long otherUserId) {
+        List<User> users = followsService.eachFollow(token, otherUserId);
         return Result.success(ResultCodeEnum.SUCCESS, users);
     }
 

@@ -249,7 +249,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, User>
      * @return
      */
     @Override
-    public Map<String, Integer> getOtherInfo(String token) {
+    public Map<String, Integer> getOtherInfo(String token, Long otherUserId) {
         Map<String, Integer> map = new HashMap<>();
         // 1. 查询我的动态数量
         Map<String, Object> objectMap = articleService.queryAll(token);
@@ -257,15 +257,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, User>
         map.put("动态", articles != null ? articles.size() : 0);
 
         // 2. 查询我的关注数量
-        List<User> users = followsService.followerUser(token);
+        List<User> users = followsService.followerUser(token, otherUserId);
         map.put("关注", users != null ? users.size() : 0);
 
         // 3. 查询我的粉丝数量
-        List<User> users1 = followsService.followeeUser(token);
+        List<User> users1 = followsService.followeeUser(token, otherUserId);
         map.put("粉丝", users1 != null ? users1.size() : 0);
 
         // 4. 查询互关数量
-        List<User> users2 = followsService.eachFollow(token);
+        List<User> users2 = followsService.eachFollow(token, otherUserId);
         map.put("互关", users2 != null ? users2.size() : 0);
 
         return map;

@@ -11,4 +11,7 @@ public interface MessageService extends IService<Message> {
     boolean saveMessage(String content, Long userId, Long otherUserId);
 
     List<MessageVO> getAllMessage(Long userId, Long otherUserId);
+
+    // 读未读消息进行已读处理
+    boolean readMessage(String token);
 }

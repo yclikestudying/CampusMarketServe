@@ -115,6 +115,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
             comments.forEach(comment -> {
                 Map<String, Object> map = new HashMap<>();
                 map.put("comment", comment.getCommentContent());
+                map.put("id", comment.getId());
                 Optional<User> optionalUser = users.stream().filter(user -> Objects.equals(user.getUserId(), comment.getUserId())).findFirst();
                 if (optionalUser.isPresent()) {
                     User user = optionalUser.get();

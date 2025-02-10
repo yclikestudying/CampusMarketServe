@@ -100,10 +100,15 @@ public class FollowsServiceImpl extends ServiceImpl<FollowsMapper, Follows>
      * @return
      */
     @Override
-    public List<User> followerUser(String token) {
-        // 1. 解析token
-        Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
-        Long userId = (Long) stringObjectMap.get("userId");
+    public List<User> followerUser(String token, Long otherUserId) {
+        Long userId = null;
+        if (otherUserId != null && otherUserId >= 0) {
+            userId = otherUserId;
+        } else {
+            // 1. 解析token
+            Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
+            userId = (Long) stringObjectMap.get("userId");
+        }
 
         // 2. 查询数量
         QueryWrapper<Follows> queryWrapper = new QueryWrapper<>();
@@ -131,10 +136,15 @@ public class FollowsServiceImpl extends ServiceImpl<FollowsMapper, Follows>
      * @return
      */
     @Override
-    public List<User> followeeUser(String token) {
-        // 1. 解析token
-        Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
-        Long userId = (Long) stringObjectMap.get("userId");
+    public List<User> followeeUser(String token, Long otherUserId) {
+        Long userId = null;
+        if (otherUserId != null && otherUserId >= 0) {
+            userId = otherUserId;
+        } else {
+            // 1. 解析token
+            Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
+            userId = (Long) stringObjectMap.get("userId");
+        }
 
         // 2. 查询数量
         QueryWrapper<Follows> queryWrapper = new QueryWrapper<>();
@@ -162,12 +172,12 @@ public class FollowsServiceImpl extends ServiceImpl<FollowsMapper, Follows>
      * @return
      */
     @Override
-    public List<User> eachFollow(String token) {
+    public List<User> eachFollow(String token, Long otherUserId) {
         // 1. 我的关注
-        List<User> users = followerUser(token);
+        List<User> users = followerUser(token, otherUserId);
 
         // 2. 我的粉丝
-        List<User> users1 = followeeUser(token);
+        List<User> users1 = followeeUser(token, otherUserId);
 
         if (users != null && !users.isEmpty() && users1 != null && !users1.isEmpty()) {
             users.retainAll(users1);

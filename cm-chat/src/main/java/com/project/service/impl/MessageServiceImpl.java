@@ -1,6 +1,7 @@
 package com.project.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.project.VO.MessageVO;
 import com.project.domain.Message;
@@ -9,6 +10,7 @@ import com.project.mapper.MessageMapper;
 import com.project.mapper.UserInfoMapper;
 import com.project.service.MessageService;
 import com.project.util.ThrowUtil;
+import com.project.util.TokenUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,9 @@ import javax.annotation.Resource;
 import javax.management.Query;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
@@ -95,5 +100,34 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
             return list;
         }
         return null;
+    }
+
+    /**
+     * 对未读消息进行已读处理
+     * @param token
+     * @return
+     */
+    @Override
+    public boolean readMessage(String token) {
+        // 1. 解析token
+        Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
+        Long userId = (Long) stringObjectMap.get("userId");
+
+        // 2. 查询出未读消息
+        QueryWrapper<Message> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("other_user_id", userId)
+                .eq("is_read", 0);
+        List<Message> messages = messageMapper.selectList(queryWrapper);
+
+        // 3. 设置未读消息为已读
+        AtomicInteger count = new AtomicInteger();
+        messages.forEach(message -> {
+            message.setIsRead(1);
+            int i = messageMapper.updateById(message);
+            if (i >= 0) {
+                count.incrementAndGet();
+            }
+        });
+        return count.get() == messages.size();
     }
 }
