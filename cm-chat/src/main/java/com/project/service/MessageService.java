@@ -13,5 +13,8 @@ public interface MessageService extends IService<Message> {
     List<MessageVO> getAllMessage(Long userId, Long otherUserId);
 
     // 读未读消息进行已读处理
-    boolean readMessage(String token);
+    boolean readMessage(String token, Long otherUserId);
+
+    // 获取所有未读消息
+    Integer getBadge(String token);
 }

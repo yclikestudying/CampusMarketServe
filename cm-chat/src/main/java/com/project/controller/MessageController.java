@@ -31,8 +31,18 @@ public class MessageController {
      */
     @PutMapping("/readMessage")
     @ApiOperation(value = "对未读消息进行已读处理")
-    public Result<Boolean> readMessage(@RequestHeader("Authorization") String token) {
-        boolean result = messageService.readMessage(token);
+    public Result<Boolean> readMessage(@RequestHeader("Authorization") String token, @RequestParam("otherUserId") Long otherUserId) {
+        boolean result = messageService.readMessage(token, otherUserId);
         return Result.success(ResultCodeEnum.SUCCESS, result);
+    }
+
+    /**
+     * 获取所有未读消息
+     */
+    @GetMapping("/getBadge")
+    @ApiOperation(value = "获取所有未读消息")
+    public Result<Integer> getBadge(@RequestHeader("Authorization") String token) {
+        Integer count = messageService.getBadge(token);
+        return Result.success(ResultCodeEnum.SUCCESS, count);
     }
 }

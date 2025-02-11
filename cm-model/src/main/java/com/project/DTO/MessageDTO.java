@@ -18,4 +18,14 @@ public class MessageDTO {
      * 对方用户id
      */
     private Long otherUserId;
+
+    /**
+     * 发送者头像
+     */
+    private String userAvatar;
+
+    /**
+     * 发送者名字
+     */
+    private String userName;
 }

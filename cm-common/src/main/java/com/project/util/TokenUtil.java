@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.project.exception.BusinessExceptionHandler;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -53,7 +54,7 @@ public class TokenUtil {
                 Long userId = idClaim.asLong();
                 result.put("userId", userId);
             } else {
-                System.out.println("id 字段不存在或为空");
+                ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "用户id不存在或为空"));
             }
 
             // 获取phone
@@ -62,7 +63,7 @@ public class TokenUtil {
                 String phone = phoneClaim.asString();
                 result.put("phone", phone);
             } else {
-                System.out.println("phone 字段不存在或为空");
+                ThrowUtil.throwByObject(new BusinessExceptionHandler(401, "用户手机不存在或为空"));
             }
 
         } catch (Exception e) {

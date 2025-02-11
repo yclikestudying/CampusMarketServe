@@ -108,26 +108,49 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message>
      * @return
      */
     @Override
-    public boolean readMessage(String token) {
+    public boolean readMessage(String token, Long otherUserId) {
         // 1. 解析token
         Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
         Long userId = (Long) stringObjectMap.get("userId");
 
         // 2. 查询出未读消息
         QueryWrapper<Message> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("other_user_id", userId)
+        queryWrapper.eq("user_id", otherUserId)
+                .eq("other_user_id", userId)
                 .eq("is_read", 0);
         List<Message> messages = messageMapper.selectList(queryWrapper);
 
         // 3. 设置未读消息为已读
-        AtomicInteger count = new AtomicInteger();
-        messages.forEach(message -> {
-            message.setIsRead(1);
-            int i = messageMapper.updateById(message);
-            if (i >= 0) {
-                count.incrementAndGet();
-            }
-        });
-        return count.get() == messages.size();
+        AtomicInteger count = new AtomicInteger(0);
+        if (!messages.isEmpty()) {
+            messages.forEach(message -> {
+                message.setIsRead(1);
+                int i = messageMapper.updateById(message);
+                if (i >= 0) {
+                    count.incrementAndGet();
+                }
+            });
+            return count.get() == messages.size();
+        }
+
+        return true;
+    }
+
+    /**
+     * 获取所有未读消息
+     * @param token
+     * @return
+     */
+    @Override
+    public Integer getBadge(String token) {
+        // 1. 解析token
+        Map<String, Object> stringObjectMap = TokenUtil.parseToken(token);
+        Long userId = (Long) stringObjectMap.get("userId");
+
+        // 2. 查询未读消息数量
+        QueryWrapper<Message> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("other_user_id", userId)
+                .eq("is_read", 0);
+        return messageMapper.selectCount(queryWrapper);
     }
 }
