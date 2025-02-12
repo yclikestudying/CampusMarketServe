@@ -1,5 +1,6 @@
 package com.project.controller;
 
+import com.project.VO.MessageListVO;
 import com.project.VO.MessageVO;
 import com.project.common.Result;
 import com.project.common.ResultCodeEnum;
@@ -44,5 +45,15 @@ public class MessageController {
     public Result<Integer> getBadge(@RequestHeader("Authorization") String token) {
         Integer count = messageService.getBadge(token);
         return Result.success(ResultCodeEnum.SUCCESS, count);
+    }
+
+    /**
+     * 查询与用户的消息列表框
+     */
+    @GetMapping("/getUserMessageList")
+    @ApiOperation(value = "查询与用户的消息列表框")
+    public Result<List<MessageListVO>> getUserMessageList(@RequestHeader("Authorization") String token) {
+        List<MessageListVO> messageList = messageService.getUserMessageList(token);
+        return Result.success(ResultCodeEnum.SUCCESS, messageList);
     }
 }

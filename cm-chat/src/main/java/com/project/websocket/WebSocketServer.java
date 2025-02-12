@@ -69,7 +69,6 @@ public class WebSocketServer {
     // 服务器更新一对一聊天记录
     public void sendMessage(Long otherUserId, MessageDTO messageDTO) throws IOException {
         if (webSocketMap.get(otherUserId) != null) {
-
             webSocketMap.get(otherUserId).getBasicRemote().sendText(gson.toJson(messageDTO));
         }
     }

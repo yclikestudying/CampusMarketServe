@@ -130,9 +130,10 @@ public class FollowsServiceImpl extends ServiceImpl<FollowsMapper, Follows>
     }
 
     /**
-     * 查询我的粉丝
+     * 查询我的粉丝列表通用接口
      *
      * @param token
+     * @param otherUserId
      * @return
      */
     @Override
